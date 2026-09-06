@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>關稅法全景實務與弱點追蹤系統</title>
+    
+    <!-- 引入獨立的 CSS 樣式表 -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- 離線備用 Tailwind CDN (保留您的 onerror 機制) -->
+    <script src="https://cdn.tailwindcss.com" onerror="console.log('離線模式啟動：使用內建樣式表')"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-300 relative">
+
+    <!-- 自訂背景圖底層 -->
+    <div id="custom-bg-layer" class="absolute inset-0 z-0 pointer-events-none bg-cover bg-center transition-opacity duration-300" style="opacity: 0.3; display: none;"></div>
+
+    <!-- 頂部導覽列 -->
+    <header class="relative z-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-sm transition-colors duration-300">
+        <div class="flex items-center gap-3">
+            <span class="text-2xl">🏛️</span>
+            <div>
+                <h1 class="text-lg font-bold text-sky-600 dark:text-sky-400">關稅法全景實務與弱點追蹤系統</h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400">專利備考引擎：模擬實務、法規資料庫、弱點分析 (支援離線運作)</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-3 flex-wrap justify-center">
+            <div class="flex gap-2 text-xs items-center">
+                <div class="bg-slate-100/80 dark:bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                    🎯 戰術完成案件：<span id="completed-cases-count" class="text-amber-600 dark:text-amber-400 font-bold">0</span>
+                </div>
+                <div class="bg-slate-100/80 dark:bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                    📖 已掌握法條：<span id="unlocked-laws-count" class="text-emerald-600 dark:text-emerald-400 font-bold">0</span> / <span id="total-laws-count">94</span> 條
+                </div>
+                <button onclick="resetLearningProgress()" class="px-3 py-1.5 text-xs bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white rounded-lg border border-rose-200 dark:border-rose-800 transition" title="重置所有進度">
+                    🔄 重置進度
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主體區 -->
+    <main class="relative z-10 flex-1 max-w-7xl w-full mx-auto p-6 flex flex-col gap-6 mb-12">
+        
+        <div class="flex gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+            <button onclick="switchTab('simulator')" id="nav-simulator" class="px-4 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white transition shadow">💼 實務案件模擬引擎</button>
+            <button onclick="switchTab('database')" id="nav-database" class="px-4 py-2 text-xs font-bold rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition hover:bg-slate-300 dark:hover:bg-slate-700">📚 完整法規資料庫與筆記</button>
+            <button onclick="switchTab('weakness')" id="nav-weakness" class="px-4 py-2 text-xs font-bold rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition hover:bg-slate-300 dark:hover:bg-slate-700">🎯 弱點與錯題追蹤儀表板</button>
+        </div>
+
+        <!-- 視圖 A：實務案件模擬器 -->
+        <section id="view-simulator" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl">
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <span id="case-category-badge" class="text-xs uppercase tracking-wider bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-400 px-3 py-1 rounded-full border border-sky-200 dark:border-sky-800">類別：進口與申報</span>
+                        <button onclick="generateRandomCase()" class="text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 transition">🎲 隨機生成新案件</button>
+                    </div>
+                    
+                    <h2 id="case-title" class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">事件載入中...</h2>
+                    <div id="case-desc" class="bg-slate-50/80 dark:bg-slate-950/80 p-4 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
+                        載入中...
+                    </div>
+
+                    <h3 class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-3">請選擇合規處置方案：</h3>
+                    <div id="action-options" class="space-y-3"></div>
+                </div>
+
+                <div id="feedback-panel" class="hidden mt-6 p-4 rounded-xl text-sm border"></div>
+            </div>
+
+            <div class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex flex-col shadow-xl">
+                <h3 class="text-base font-bold text-slate-800 dark:text-slate-200 mb-3">💡 案件關聯法條與提示</h3>
+                <div id="case-hints" class="space-y-3 text-xs text-slate-600 dark:text-slate-400 max-h-[500px] overflow-y-auto pr-1">
+                    <p>完成左側案件決策後，系統將自動解鎖對應法條，並納入您的學習進度與筆記庫中。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 視圖 B：完整法規資料庫與筆記 -->
+        <section id="view-database" class="hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xl">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                <h3 class="text-lg font-bold text-slate-800 dark:text-slate-200">📚 完整法規與備考筆記資料庫</h3>
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <!-- 新增法規篩選器 (已加入關稅法施行細則) -->
+                    <select id="db-category-filter" onchange="filterDatabase()" class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-sky-500">
+                        <option value="all">全部法規</option>
+                        <option value="關稅法">關稅法</option>
+                        <option value="海關緝私條例">海關緝私條例</option>
+                        <option value="關稅法施行細則">關稅法施行細則</option>
+                    </select>
+                    <input type="text" id="db-search" oninput="filterDatabase()" placeholder="輸入條號或關鍵字..." class="w-full sm:w-64 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-sky-500">
+                </div>
+            </div>
+            <div id="database-container" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"></div>
+        </section>
+
+        <!-- 視圖 C：弱點與錯題追蹤儀表板 -->
+        <section id="view-weakness" class="hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xl">
+            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-200 mb-4">🎯 學習弱點與錯題追蹤儀表板</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-slate-50/80 dark:bg-slate-950/80 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div class="text-xs text-slate-500">已記錄筆記法條數</div>
+                    <div id="stat-notes-count" class="text-2xl font-bold text-sky-600 dark:text-sky-400 mt-1">0</div>
+                </div>
+                <div class="bg-slate-50/80 dark:bg-slate-950/80 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div class="text-xs text-slate-500">需加強弱點法條（未掌握）</div>
+                    <div id="stat-weak-count" class="text-2xl font-bold text-rose-500 mt-1">94</div>
+                </div>
+                <div class="bg-slate-50/80 dark:bg-slate-950/80 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div class="text-xs text-slate-500">法規掌握覆蓋率</div>
+                    <div id="stat-coverage-rate" class="text-2xl font-bold text-emerald-500 mt-1">0%</div>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center mb-3">
+                <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300">📌 我的個人備考筆記清單</h4>
+                <div class="flex gap-2 flex-wrap">
+                    <!-- 自選資料夾與 TXT 匯出入按鈕 -->
+                    <button onclick="exportNotesToFolder()" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl text-xs transition">📁 選擇資料夾匯出 TXT</button>
+                    <button onclick="importNotesFromFolder()" class="px-3 py-1.5 bg-sky-50 dark:bg-sky-950 hover:bg-sky-100 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800 rounded-xl text-xs transition cursor-pointer">📂 選擇資料夾匯入 TXT</button>
+                    <input type="file" id="fallbackImportInput" accept=".txt" class="hidden" onchange="handleFallbackImport(event)">
+                </div>
+            </div>
+
+            <div id="weakness-notes-list" class="space-y-3 max-h-[400px] overflow-y-auto pr-2 text-xs">
+                <p class="text-slate-500">尚無筆記記錄，請從法規資料庫或模擬器中新增筆記。</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="relative z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 py-6 px-6 text-center text-xs text-slate-500 dark:text-slate-400 transition-colors duration-300 mb-16">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>© 2026 Angela Chen 雪舞. All rights reserved. 關稅法全景實務與弱點追蹤系統</div>
+            <div class="flex items-center gap-4">
+                <a href="https://github.com" target="_blank" class="hover:text-sky-600 transition">GitHub</a>
+                <a href="https://discord.gg/5ryVdCd65E" target="_blank" class="hover:text-sky-600 transition">Discord 社群</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 右下角懸浮控制面板 -->
+    <div class="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl text-xs">
+        <div class="flex items-center gap-2">
+            <span>🖼️ 背景：</span>
+            <input type="file" id="bg-image-input" accept="image/*" onchange="handleCustomBgUpload(event)" class="w-28 text-[10px] text-slate-500 file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:bg-sky-50 file:text-sky-700 cursor-pointer">
+            <div class="flex items-center gap-1 border-l border-slate-300 dark:border-slate-700 pl-2">
+                <span>透明度：</span>
+                <input type="range" id="bg-opacity-range" min="0" max="100" value="30" oninput="changeBgOpacity(this.value)" class="w-16 accent-sky-600">
+            </div>
+            <button onclick="clearCustomBg()" class="text-slate-400 hover:text-rose-500 transition px-1" title="清除自訂背景">✕</button>
+        </div>
+        <div class="border-l border-slate-300 dark:border-slate-700 pl-2">
+            <button onclick="toggleTheme()" class="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition" title="切換深淺色模式">
+                <span id="theme-icon">☀️</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 筆記燈箱 (Modal) -->
+    <div id="law-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative">
+            <button onclick="closeLawNote()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">✕</button>
+            <h3 id="modal-law-title" class="text-lg font-bold text-sky-600 dark:text-sky-400 mb-2"></h3>
+            <p id="modal-law-desc" class="text-xs text-slate-600 dark:text-slate-300 mb-4 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800"></p>
+            
+            <label class="block text-xs font-semibold text-slate-500 mb-2">📝 個人記憶口訣與陷阱提醒：</label>
+            <textarea id="modal-law-note-input" placeholder="在此輸入筆記..." class="w-full h-32 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-sky-500 mb-4 resize-none"></textarea>
+            
+            <div class="text-right">
+                <button onclick="saveLawNote()" class="bg-sky-600 hover:bg-sky-500 text-white px-5 py-2 rounded-xl text-xs font-semibold transition">儲存筆記</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 依序引入各個獨立的法規資料檔 -->
+    <script src="data/data-laws-customs-act.js"></script>
+    <script src="data/data-laws-customs-anti-smuggling-act.js"></script>
+    <script src="data/data-laws-enforcement-rules-of-the-customs-act.js"></script>
+
+    <!-- 建立總合陣列，自動將所有獨立法規合併為 globalLawsDB -->
+    <script>
+        const globalLawsDB = [
+            ...(typeof customsactLawsDB !== 'undefined' ? customsactLawsDB : []),
+            ...(typeof customsantismugglingactLawsDB !== 'undefined' ? customsantismugglingactLawsDB : []),
+            ...(typeof enforcementrulesofthecustomsactLawsDB !== 'undefined' ? enforcementrulesofthecustomsactLawsDB : [])
+        ];
+    </script>
+
+    <!-- 引入其他資料與主邏輯檔 -->
+    <script src="data/data-cases.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+:root {
+    --bg-light: #f8fafc;
+    --text-light: #0f172a;
+    --bg-dark: #030712;
+    --text-dark: #f1f5f9;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-light);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+html.dark body {
+    background-color: var(--bg-dark);
+    color: var(--text-dark);
+}
+
+.hidden { display: none !important; }
+.flex { display: flex; }
+.grid { display: grid; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.flex-col { flex-direction: column; }
+.flex-1 { flex: 1 1 0%; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+.gap-6 { gap: 1.5rem; }
+.p-4 { padding: 1rem; }
+.p-6 { padding: 1.5rem; }
+.px-4 { padding-left: 1rem; padding-right: 1rem; }
+.py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+.py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+.rounded-xl { border-radius: 0.75rem; }
+.rounded-2xl { border-radius: 1rem; }
+.font-bold { font-weight: 700; }
+.text-xs { font-size: 0.75rem; line-height: 1rem; }
+.text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+.text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+.text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+.w-full { width: 100%; }
+.max-w-7xl { max-width: 80rem; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+.relative { position: relative; }
+.absolute { position: absolute; }
+.fixed { position: fixed; }
+.inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+.z-0 { z-index: 0; }
+.z-10 { z-index: 10; }
+.z-50 { z-index: 50; }
+.shadow-sm { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+.shadow-xl { box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
+.shadow-2xl { box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); }
+.cursor-pointer { cursor: pointer; }
+.transition { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    border: 1px solid rgb(203 213 225);
+    background-color: rgb(241 245 249);
+    color: rgb(51 65 85);
+    transition: background-color 0.15s, color 0.15s;
+}
+
+html.dark .btn-secondary {
+    border-color: rgb(51 65 85);
+    background-color: rgb(30 41 59);
+    color: rgb(226 232 240);
+}
+
+.btn-secondary:hover {
+    background-color: rgb(226 232 240);
+}
+
+html.dark .btn-secondary:hover {
+    background-color: rgb(51 65 85);
+}
+
+button { 
+    cursor: pointer; 
+    border: none; 
+    font-family: inherit; 
+}
+
+input, textarea { 
+    font-family: inherit; 
+}
+
+/* ==========================================
+   📌 列印與 PDF 匯出優化樣式
+   ========================================== */
+@media print {
+    body {
+        background-color: white !important;
+        color: black !important;
+    }
+    
+    /* 列印時隱藏不需要的導覽列、按鈕與懸浮面板 */
+    header, 
+    footer, 
+    .fixed, 
+    button, 
+    input, 
+    select,
+    .flex.gap-2.border-b {
+        display: none !important;
+    }
+
+    /* 確保列印時僅完整呈現弱點與筆記區塊 */
+    #view-weakness {
+        display: block !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    #weakness-notes-list {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+}
