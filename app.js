@@ -210,10 +210,10 @@ function saveLawNote() {
 }
 
 // ==========================================
-// 📌 自選資料夾：TXT 筆記匯出與匯入模組
+// 📌 自選檔案：TXT 筆記匯出與匯入模組
 // ==========================================
 
-// 1. 選擇資料夾並將筆記匯出為 TXT 檔案
+// 1. 選擇資料夾/位置並將筆記匯出為 TXT 檔案
 async function exportNotesToFolder() {
     const notesObj = appState.lawNotes;
     if (Object.keys(notesObj).length === 0) {
@@ -247,7 +247,7 @@ async function exportNotesToFolder() {
             const writable = await handle.createWritable();
             await writable.write(textContent);
             await writable.close();
-            alert('筆記已成功匯出為 TXT 檔案至您指定的資料夾！');
+            alert('筆記已成功匯出為 TXT 檔案至您指定的位置！');
             return;
         } catch (err) {
             if (err.name !== 'AbortError') {
@@ -271,44 +271,8 @@ async function exportNotesToFolder() {
     alert('已透過傳統下載方式將 TXT 檔案儲存至您的預設下載資料夾。');
 }
 
-// 2. 選擇資料夾並讀取/匯入 TXT 備份檔案，自動轉換回系統格式
-async function importNotesFromFolder() {
-    if ('showDirectoryPicker' in window) {
-        try {
-            const dirHandle = await window.showDirectoryPicker();
-            let targetFileHandle = null;
-
-            for await (const entry of dirHandle.values()) {
-                if (entry.kind === 'file' && entry.name.endsWith('.txt')) {
-                    if (entry.name.includes('customs_law_notes')) {
-                        targetFileHandle = entry;
-                        break;
-                    } else if (!targetFileHandle) {
-                        targetFileHandle = entry;
-                    }
-                }
-            }
-
-            if (!targetFileHandle) {
-                alert('在您選擇的資料夾中找不到任何合適的 TXT 備份檔案。');
-                return;
-            }
-
-            const file = await targetFileHandle.getFile();
-            const content = await file.text();
-
-            processImportedTxtContent(file.name, content);
-            return;
-        } catch (err) {
-            if (err.name !== 'AbortError') {
-                console.warn('資料夾選擇 API 失敗，改用檔案選擇器', err);
-            } else {
-                return; 
-            }
-        }
-    }
-
-    // 降級防呆方案：觸發隱藏的檔案上傳 input
+// 2. 點擊按鈕直接觸發隱藏的檔案上傳 input 進行單一檔案選取匯入
+function importNotesFromFile() {
     document.getElementById('fallbackImportInput').click();
 }
 
@@ -346,7 +310,7 @@ function processImportedTxtContent(fileName, content) {
     }
 }
 
-// 4. 傳統檔案上傳 input 的備用觸發處理
+// 4. 檔案上傳 input 的讀取處理
 function handleFallbackImport(event) {
     const file = event.target.files[0];
     if (!file) return;
