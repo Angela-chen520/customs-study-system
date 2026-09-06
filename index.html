@@ -121,9 +121,9 @@
             <div class="flex justify-between items-center mb-3">
                 <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300">📌 我的個人備考筆記清單</h4>
                 <div class="flex gap-2 flex-wrap">
-                    <!-- 自選資料夾與 TXT 匯出入按鈕 -->
+                    <!-- 改為選擇資料夾匯出與選擇檔案匯入 -->
                     <button onclick="exportNotesToFolder()" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl text-xs transition">📁 選擇資料夾匯出 TXT</button>
-                    <button onclick="importNotesFromFolder()" class="px-3 py-1.5 bg-sky-50 dark:bg-sky-950 hover:bg-sky-100 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800 rounded-xl text-xs transition cursor-pointer">📂 選擇資料夾匯入 TXT</button>
+                    <button onclick="importNotesFromFile()" class="px-3 py-1.5 bg-sky-50 dark:bg-sky-950 hover:bg-sky-100 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800 rounded-xl text-xs transition cursor-pointer">📂 選擇檔案匯入 TXT</button>
                     <input type="file" id="fallbackImportInput" accept=".txt" class="hidden" onchange="handleFallbackImport(event)">
                 </div>
             </div>
